@@ -6,4 +6,5 @@ public class GpioPinsConfiguration
     public int RunningLedPin { get; set; } = 26;
     public int RecordingLedPin { get; set; } = 22;
     public int ToggleRecordingPin { get; set; } = 13;
+    public int ButtonDebounceTimeoutMs { get; set; } = 100;
 }

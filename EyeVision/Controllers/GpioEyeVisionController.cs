@@ -8,6 +8,7 @@ public class GpioEyeVisionController : EyeVisionController, IDisposable
 {
     private readonly GpioController _gpioController;
     private readonly EyeVisionConfiguration _configuration;
+    private DateTime? _lastToggleButtonPress = null;
     
     public GpioEyeVisionController(ILogger logger, EyeVision cam, EyeVisionConfiguration configuration) : base(logger, cam)
     {
@@ -28,7 +29,14 @@ public class GpioEyeVisionController : EyeVisionController, IDisposable
 
     private void OnToggleRecording(object sender, PinValueChangedEventArgs pinvaluechangedeventargs)
     {
+        DateTime now = DateTime.Now;
+
+        if (_lastToggleButtonPress != null && now.Subtract(_lastToggleButtonPress.Value).TotalMilliseconds <
+            _configuration.GpioPins.ButtonDebounceTimeoutMs)
+            return;
+        
         Logger.LogInformation("Toggling recording");
+        _lastToggleButtonPress = DateTime.Now;
         
         ToggleRecording();
         
