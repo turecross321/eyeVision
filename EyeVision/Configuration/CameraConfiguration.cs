@@ -12,5 +12,4 @@ public record CameraConfiguration
     public string? AudioDevice { get; set; } = "";
     public int Threads { get; set; } = 1;
     public int BufferSizeMb { get; set; } = 100;
-    public int? ButtonGpioPin { get; set; } = null;
 }

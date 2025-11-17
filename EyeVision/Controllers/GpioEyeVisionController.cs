@@ -20,15 +20,20 @@ public class GpioEyeVisionController : EyeVisionController, IDisposable
 
         WriteAllLeds(false);
         
-        _gpioController.OpenPin(_configuration.GpioPins.StartRecordingButtonPin, PinMode.InputPullUp);
-        _gpioController.RegisterCallbackForPinValueChangedEvent(_configuration.GpioPins.StartRecordingButtonPin, PinEventTypes.Falling, OnStartRecording);
-        
-        _gpioController.OpenPin(_configuration.GpioPins.StopRecordingButtonPin, PinMode.InputPullUp);
-        _gpioController.RegisterCallbackForPinValueChangedEvent(_configuration.GpioPins.StopRecordingButtonPin, PinEventTypes.Falling, OnStopRecording);
+        _gpioController.OpenPin(_configuration.GpioPins.ToggleRecordingPin, PinMode.InputPullUp);
+        _gpioController.RegisterCallbackForPinValueChangedEvent(_configuration.GpioPins.ToggleRecordingPin, PinEventTypes.Falling, OnToggleRecording);
         
         _gpioController.Write(_configuration.GpioPins.RunningLedPin, true);
     }
-    
+
+    private void OnToggleRecording(object sender, PinValueChangedEventArgs pinvaluechangedeventargs)
+    {
+        Logger.LogInformation("Toggling recording");
+        
+        ToggleRecording();
+        
+    }
+
     private void WriteAllLeds(bool value)
     {
         Logger.LogInformation("Writing all LEDs {value}", value);
@@ -49,17 +54,7 @@ public class GpioEyeVisionController : EyeVisionController, IDisposable
     {
         _gpioController.Write(_configuration.GpioPins.WarningLedPin, value);
     }
-
-    private void OnStopRecording(object sender, PinValueChangedEventArgs pinValueChangedEventArgs)
-    {
-        StopRecording();
-    }
-
-    private void OnStartRecording(object sender, PinValueChangedEventArgs pinValueChangedEventArgs)
-    {
-        StartRecording();
-    }
-
+    
     
     public override void Dispose()
     {

@@ -47,6 +47,14 @@ public abstract class EyeVisionController : IDisposable
         _cam.StartRecording();
     }
 
+    protected void ToggleRecording()
+    {
+        if (_cam.IsRecording())
+            _cam.StopRecording();
+        else
+            _cam.StartRecording();
+    }
+
     public virtual void Dispose()
     {
         _cam.Warning -= CamOnWarning;
