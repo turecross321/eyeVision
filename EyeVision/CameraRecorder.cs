@@ -20,7 +20,7 @@ public class CameraRecorder(
     private string VideoEncoder { get; } = videoEncoder;
     private string AudioEncoder { get; } = audioEncoder;
     public DateTimeOffset? StartDate { get; private set; }
-    public string VideoFileName => StartDate?.ToString("yyyy-MM-dd_HH-mm-ss") + ".mp4";
+    public string VideoFileName => StartDate?.ToString("yyyy-MM-dd_HH-mm-ss") + "." + cameraConfig.FileFormat;
     public string? CurrentTripDirectory { get; private set; }
 
     private CancellationToken? _recordingCancellationToken;
