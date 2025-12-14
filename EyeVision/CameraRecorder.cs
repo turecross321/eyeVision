@@ -135,47 +135,83 @@ public class CameraRecorder(
         _recordingCancellationToken.Value.Register(StopRecording);
     }
 
-    private void StopRecording()
+private void StopRecording()
+{
+    Recording = false;
+    
+    if (_process == null || _process.HasExited)
     {
-        Recording = false;
-        
-        if (_process == null || _process.HasExited)
+        logger.LogWarning("Recording process is not running or has already exited.");
+        eyeVision.InvokeWarning();
+        return;
+    }
+
+    try
+    {
+        logger.LogInformation("Stopping recording for {device}", CameraConfig);
+
+        // Send 'q' to ffmpeg to gracefully stop
+        _process.StandardInput.WriteLine("q");
+        _process.StandardInput.Flush();
+
+        _process.WaitForExit(5000); // Wait for clean termination
+        if (!_process.HasExited)
         {
-            logger.LogWarning("Recording process is not running or has already exited.");
+            logger.LogWarning("Recording process did not stop cleanly. Forcing termination...");
             eyeVision.InvokeWarning();
+            _process.Kill();
         }
 
-        try
+        // Linux-specific flush to disk
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && CurrentTripDirectory != null && StartDate != null)
         {
-            logger.LogInformation("Stopping recording for {device}", CameraConfig);
+            string tempPath = Path.Combine(CurrentTripDirectory, VideoFileName + ".tmp");
+            string finalPath = Path.Combine(CurrentTripDirectory, VideoFileName);
 
-            // Send a graceful termination signal
-            _process!.StandardInput.WriteLine("q");
-            _process.StandardInput.Flush();
-            
-            // Wait for the process to exit
-            _process.WaitForExit(5000); // Wait up to 5 seconds for clean termination
+            // rename the original ffmpeg output to temp file if needed
+            if (File.Exists(finalPath))
+                File.Move(finalPath, tempPath);
 
-            if (!_process.HasExited)
+            int fd = NativeMethods.open(tempPath, NativeMethods.O_RDONLY);
+            if (fd != -1)
             {
-                logger.LogWarning("Recording process did not stop cleanly. Forcing termination...");
-                eyeVision.InvokeWarning();
-                _process.Kill(); // Force termination if necessary
+                NativeMethods.fsync(fd);
+                NativeMethods.close(fd);
+            }
+
+            // sync directory
+            fd = NativeMethods.open(CurrentTripDirectory, NativeMethods.O_RDONLY);
+            if (fd != -1)
+            {
+                NativeMethods.fsync(fd);
+                NativeMethods.close(fd);
+            }
+
+            // atomically rename temp -> final
+            File.Move(tempPath, finalPath);
+
+            // sync directory again to commit the rename
+            fd = NativeMethods.open(CurrentTripDirectory, NativeMethods.O_RDONLY);
+            if (fd != -1)
+            {
+                NativeMethods.fsync(fd);
+                NativeMethods.close(fd);
             }
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error stopping recording process for {device}", CameraConfig);
-        }
-        finally
-        {
-            _process?.Dispose();
-            _process = null;
-            eyeVision.InvokeRecordingActivity(this);
-            StartDate = null;
-            CurrentTripDirectory = null;
-        }
     }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error stopping recording process for {device}", CameraConfig);
+    }
+    finally
+    {
+        _process?.Dispose();
+        _process = null;
+        eyeVision.InvokeRecordingActivity(this);
+        StartDate = null;
+        CurrentTripDirectory = null;
+    }
+}
     
     private void ProcessOnExited(object? sender, EventArgs e)
     {
