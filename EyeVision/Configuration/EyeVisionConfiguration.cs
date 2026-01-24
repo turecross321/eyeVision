@@ -6,7 +6,7 @@ public class EyeVisionConfiguration
 {
     public CameraConfiguration Camera { get; init; } = new CameraConfiguration();
     public string VideosPath { get; init; } = Path.Combine(Environment.CurrentDirectory, "videos/");
-    public string VideoEncoder { get; init; } = "h264_v4l2m2m";
+    public string VideoEncoder { get; init; } = "copy";
     public string AudioEncoder { get; init; } = "aac";
     public bool UseCliController { get; init; } = true;
     public bool UseGpioController { get; init; } = false;

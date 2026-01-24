@@ -90,8 +90,13 @@ public class CameraRecorder(
             arguments += $" -c:a {audioEncoder}" +
                          $" -b:a {camera.AudioBitrateKbps}k";
 
+        if (videoEncoder != "copy")
+        {
+            arguments +=
+                $" -vf format=yuv420p";
+        }
+        
         arguments +=
-            $" -vf format=yuv420p" +
             $" -movflags +faststart" +
             $" -async 1" + // Ensure audio and video are in sync
             $" -threads {camera.Threads}" +
