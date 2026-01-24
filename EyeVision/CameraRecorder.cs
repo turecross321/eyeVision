@@ -83,7 +83,7 @@ public class CameraRecorder(
             $" -c:v {videoEncoder}" +
             $" -preset veryfast" +
             $" -b:v {camera.VideoBitrateKbps}k" +
-            $" -g 10" +
+            $" -g {camera.Fps}" + // 1 keyframe per second
             $" -fps_mode vfr";
 
         if (camera.RecordAudio)
@@ -106,11 +106,14 @@ public class CameraRecorder(
         CurrentTripDirectory = directory;
         string output = Path.Combine(directory, VideoFileName);
         logger.LogInformation("Starting recording for {device} at {output}", CameraConfig, output);
+
+        string ffmpegArguments = GetFfmpegArguments(CameraConfig, VideoEncoder, AudioEncoder, output);
+        logger.LogDebug("FFMPEG arguments for {device}: {arg}", CameraConfig, ffmpegArguments);
         
         var startInfo = new ProcessStartInfo 
         {
             FileName = "ffmpeg",
-            Arguments = GetFfmpegArguments(CameraConfig, VideoEncoder, AudioEncoder, output),
+            Arguments = ffmpegArguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             RedirectStandardInput = true,
