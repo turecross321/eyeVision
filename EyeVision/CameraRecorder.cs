@@ -57,8 +57,9 @@ public class CameraRecorder(
         arguments += $" -framerate {camera.Fps}" +
                      $" -f {videoFormat}" +
                      $" -rtbufsize {camera.BufferSizeMb}M" +
-                     $" -video_size {camera.ResolutionWidth}x{camera.ResolutionHeight}";
-
+                     $" -video_size {camera.ResolutionWidth}x{camera.ResolutionHeight}" +
+                     $" -input_format {camera.InputPixelFormat}";
+        
         if (videoFormat == "dshow")
         {
             arguments += $" -i video=\"{camera.DeviceName}\"";

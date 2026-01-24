@@ -5,6 +5,7 @@ public record CameraConfiguration
     public string DeviceName { get; set; } = "/dev/video0";
     public int Fps { get; set; } = 30;
     public string FileFormat { get; set; } = "mkv";
+    public string InputPixelFormat { get; set; } = "mjpeg";
     public long VideoBitrateKbps { get; set; } = 1_500;
     public int ResolutionWidth { get; set; } = 640;
     public int ResolutionHeight { get; set; } = 480;
